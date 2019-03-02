@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -14,31 +15,51 @@ namespace reconcile2
         static string output { get; set; }
         static void Main(string[] args)
         {
+            Console.WriteLine(">> reconcile");
             loadArguments(args);
+
+            //read file 1
+            Console.Write("reading {0} ...", filename_1);
             int rowToGet_1 = getRowNumber(filename_1, rowname_1);
-            Console.WriteLine(rowToGet_1);
-            int numberOfLines_1 = getNumberOfLines(filename_1);
-            Console.WriteLine(numberOfLines_1);
-            string firstLine = File.ReadLines(filename_1).First();
-            string sortedLine = getSortedLine(firstLine, rowToGet_1);
-            Console.WriteLine(sortedLine);
+            List<string> tempList_1 = new List<string>();
+            List<string> list_1 = new List<string>();
+            tempList_1.AddRange(File.ReadLines(filename_1));
+            tempList_1.ForEach(i => list_1.Add(getSortedLine(i,rowToGet_1)));
+            Console.WriteLine("\rreading {0} 100%", filename_1);
+
+            //sort file 1
+            Console.Write("sorting {0} ...", filename_1);
+            list_1.Sort(); //dont sort the header
+            Console.WriteLine("\rsorting {0} 100%", filename_1);
+
+            //read file 2
+            Console.Write("reading {0} ...", filename_2);
+            int rowToGet_2 = getRowNumber(filename_2, rowname_2);
+            List<string> tempList_2 = new List<string>();
+            List<string> list_2 = new List<string>();
+            tempList_2.AddRange(File.ReadLines(filename_2));
+            tempList_2.ForEach(i => list_2.Add(getSortedLine(i,rowToGet_2)));
+            Console.WriteLine("\rreading {0} 100%", filename_2);
+
+            //search in file 1
+            var allLines = compareLines(list_1, list_2, new compareIds());
+            System.IO.File.WriteAllLines(output, allLines);
+            printf("\rsearching %s 100%%\n", filename_2);
+
         }
 
-        private static string getSortedLine(string line, int rowToGet_1)
-        {
-            var lineArray = line.Split('\t');
-            line = lineArray[rowToGet_1];
-            for (int i = 0; i < lineArray.Length; i++)
-            {
-                if (i != rowToGet_1)
-                    line += '\t' + lineArray[i];
-            }
-            return line;
-        }
-
-        private static int getNumberOfLines(string filename_1)
-        {
-            return File.ReadLines(filename_1).Count();
+        private static List<string> compareLines(List<string> list_1, List<string> list_2, compareIds compIds)
+        { 
+            var lines = new List<string>();
+            list_2.ForEach(i => {
+                var item = list_1.BinarySearch(i, compIds);
+                if (item != -1)
+                {
+                   lines.Add(i + '\t' + list_1[item].Split(new[] {'\t'}, 2)[1]);
+                }
+                item = 0;
+            });
+            return lines;
         }
 
         private static void loadArguments(string[] args)
@@ -53,9 +74,29 @@ namespace reconcile2
             output = args[4];
         }
 
-        private static int getRowNumber(string filename_1, string rowname_1)
+        private static int getRowNumber(string filename, string rowname)
         {
-            return File.ReadLines(filename_1).First().Split(rowname_1)[0].Split('\t').Length - 1;
+            var firstLine = File.ReadLines(filename).First();
+            return firstLine.Split(rowname)[0].Split('\t').Length-1;
+        }
+
+        private static string getSortedLine(string line, int rowToGet)
+        {
+            var lineArray = line.Split('\t');
+            line = lineArray[rowToGet];
+            for (int i = 0; i < lineArray.Length; i++)
+            {
+                if (i != rowToGet)
+                    line += '\t' + lineArray[i];
+            }
+            return line;
         }
     }
+    public class compareIds : IComparer<string>
+{
+    public int Compare(string x, string y)
+    {
+        return string.Compare(x.Split('\t')[0],y.Split('\t')[0]);
+    }
+}
 }
