@@ -72,6 +72,7 @@ namespace reconcile2
             if (args.Length != 5)
             {
                 Console.WriteLine("format: dotnet run <input file 1> <input row 1> <input file 2> <input row 2> <output file>");
+                Environment.Exit(-1);
             }
             else
             {
