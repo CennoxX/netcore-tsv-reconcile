@@ -25,10 +25,10 @@ namespace reconcile2
             List<string> tempList_1 = new List<string>(File.ReadLines(filename_1));
             tempList_1.ForEach(i => list_1.Add(getSortedLine(i, rowToGet_1)));
             Console.WriteLine("\rreading {0} 100%", filename_1);
-            var header = list_1[0];
 
             //sort file 1
             Console.Write("sorting {0} ...", filename_1);
+            var header = list_1[0];
             list_1.RemoveAt(0);
             list_1.Sort(); //dont sort the header
             Console.WriteLine("\rsorting {0} 100%", filename_1);
@@ -41,7 +41,7 @@ namespace reconcile2
             tempList_2.ForEach(i => list_2.Add(getSortedLine(i, rowToGet_2)));
             Console.WriteLine("\rreading {0} 100%", filename_2);
             header = list_2[0] + '\t' + header.Split(new[] { '\t' }, 2)[1];
-            list_1.RemoveAt(0);
+            list_2.RemoveAt(0);
 
             //search in file 1
             var allLines = compareLines(list_1, list_2, new compareIds());
@@ -87,7 +87,7 @@ namespace reconcile2
         private static int getRowNumber(string filename, string rowname)
         {
             var firstLine = File.ReadLines(filename).First();
-            return firstLine.Split(rowname)[0].Split('\t').Length - 1;
+            return firstLine.Split(new string[] { rowname }, StringSplitOptions.None)[0].Split('\t').Length - 1;
         }
 
         private static string getSortedLine(string line, int rowToGet)
