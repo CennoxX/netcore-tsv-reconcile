@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <StartupObject>reconcile2.Reconcile2</StartupObject>
   </PropertyGroup>
 
 </Project>
